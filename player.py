@@ -10,6 +10,10 @@ class Player(CircleShape):
         self.rotation = 0
         self.shot_cooldown = 0
         
+        # Lives / respawn state
+        self.lives = PLAYER_LIVES
+        self.invulnerable = False
+        self.invuln_timer = 0.0
 
     def draw(self, screen):
         pygame.draw.polygon(screen, "white", self.triangle(), 2)
@@ -23,6 +27,12 @@ class Player(CircleShape):
         return [a, b, c]
 
     def update(self, dt):
+        # Handle respawn / invincibility timer
+        if self.invulnerable:
+            self.invuln_timer -= dt
+            if self.invuln_timer <= 0:
+                self.invulnerable = False
+
         keys = pygame.key.get_pressed()
         self.shot_cooldown -= dt
 
@@ -53,3 +63,10 @@ class Player(CircleShape):
         shot = Shot(shot_position.x, shot_position.y, SHOT_RADIUS)
         shot.velocity = shot_velocity
         self.shot_cooldown = PLAYER_SHOOT_COOLDOWN
+
+    def respawn(self, x, y):
+        
+        self.position.update(x, y)
+        self.rotation = 0
+        self.invulnerable = True
+        self.invuln_timer = RESPAWN_TIME

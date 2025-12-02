@@ -19,6 +19,10 @@ def main():
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pygame.time.Clock()
 
+    # Load background image
+    background = pygame.image.load("assets/background.png").convert()
+    background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
     updatable = pygame.sprite.Group()
     drawable = pygame.sprite.Group()
     asteroids = pygame.sprite.Group()
@@ -43,20 +47,31 @@ def main():
 
         updatable.update(dt)
 
-        screen.fill("black")
+        # Draw the background
+        screen.blit(background, (0, 0))
 
         for obj in drawable:
             obj.draw(screen)
 
         for asteroid in asteroids:
-            if player.collide(asteroid):
-                print("Game over!")
-                return
+            # Player–asteroid collision (only if not invulnerable)
+            if not player.invulnerable and player.collide(asteroid):
+                player.lives -= 1
+                print(f"Player hit! Lives left: {player.lives}")
+
+                if player.lives <= 0:
+                    print("Game over!")
+                    return
+                else:
+                    # Respawn in the center and give brief invulnerability
+                    player.respawn(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+                    # Avoid multiple hits in the same frame
+                    break
             
             for bullet in shots:
                 if asteroid.collide(bullet):
                     if asteroid.radius > ASTEROID_MIN_RADIUS:
-                        asteroid.split()
+                      asteroid.split()
                     
                     asteroid.kill()
                     bullet.kill()
